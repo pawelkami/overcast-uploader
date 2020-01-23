@@ -5,7 +5,7 @@ import glob, os
 import threading
 import datetime
 
-def send_file_to_overcast(filename, login, password):
+def send_file_to_overcast(filename, login, password, clean=False):
     if not filename.endswith("mp3"):
         raise Exception("Only mp3 files can be uploaded.")
 
@@ -53,15 +53,18 @@ def send_file_to_overcast(filename, login, password):
 
     print(filename + " has been sent")
 
+    if clean and os.path.exists(filename):
+        os.remove(filename)
 
-def send_directory_to_overcast(dirpath, login, password):
+
+def send_directory_to_overcast(dirpath, login, password, clean=False):
     os.chdir(dirpath)
     threads = []
     for filename in glob.glob("*"):
         if not filename.endswith("mp3"):
             continue
 
-        t = threading.Thread(target=send_file_to_overcast, args=(filename, login, password))
+        t = threading.Thread(target=send_file_to_overcast, args=(filename, login, password, clean))
         threads.append(t)
         t.start()
 
@@ -73,6 +76,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--email', help="E-mail used to login to Overcast.")
     parser.add_argument('-p', '--password', help="Password to Overcast account.")
+    parser.add_argument('-c', '--clean', help="Remove file after upload.", action="store_true")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-d', '--dir', help="Directory with files to upload.")
@@ -100,9 +104,9 @@ if __name__ == '__main__':
     begin_time = datetime.datetime.now()
 
     if args.file is not None:
-        send_file_to_overcast(args.file, login, password)
+        send_file_to_overcast(args.file, login, password, args.clean)
     elif args.dir is not None:
-        send_directory_to_overcast(args.dir, login, password)
+        send_directory_to_overcast(args.dir, login, password, args.clean)
 
     end_time = datetime.datetime.now()
 
