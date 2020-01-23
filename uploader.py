@@ -6,6 +6,9 @@ import threading
 import datetime
 
 def send_file_to_overcast(filename, login, password):
+    if not filename.endswith("mp3"):
+        raise Exception("Only mp3 files can be uploaded.")
+
     with open(filename, 'rb') as f:
         file_body = f.read()
 
@@ -68,18 +71,39 @@ def send_directory_to_overcast(dirpath, login, password):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dir', help="Directory with files to upload.", required=True)
+    parser.add_argument('-e', '--email', help="E-mail used to login to Overcast.")
+    parser.add_argument('-p', '--password', help="Password to Overcast account.")
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-d', '--dir', help="Directory with files to upload.")
+    group.add_argument('-f', '--file', help="File to upload.")
     args = parser.parse_args()
 
-    if not os.path.isdir(args.dir):
+    if args.dir is not None and not os.path.isdir(args.dir):
         print(args.dir + " is not a valid path")
         exit(1)
 
-    login = input("Email:")
-    password = input("Password:")
+    if args.file is not None and not os.path.isfile(args.file):
+        print(args.file + " is not a valid path")
+        exit(1)
+
+    if args.email:
+        login = args.email
+    else:
+        login = input("Email:")
+
+    if args.password:
+        password = args.password
+    else:
+        password = input("Password:")
 
     begin_time = datetime.datetime.now()
-    send_directory_to_overcast(args.dir, login, password)
+
+    if args.file is not None:
+        send_file_to_overcast(args.file, login, password)
+    elif args.dir is not None:
+        send_directory_to_overcast(args.dir, login, password)
+
     end_time = datetime.datetime.now()
 
     print("Begin time: " + str(begin_time))
