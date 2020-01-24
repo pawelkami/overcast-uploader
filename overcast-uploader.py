@@ -5,14 +5,15 @@ import glob, os
 import threading
 import datetime
 
-def send_file_to_overcast(filename, login, password, clean=False):
-    if not filename.endswith("mp3"):
+def send_file_to_overcast(filepath, login, password, clean=False):
+    if not filepath.endswith("mp3"):
         raise Exception("Only mp3 files can be uploaded.")
 
-    with open(filename, 'rb') as f:
+    with open(filepath, 'rb') as f:
         file_body = f.read()
 
-    print("Sending: " + filename + " Size: " + str(len(file_body)) + " bytes")
+    print("Sending: " + filepath + " Size: " + str(len(file_body)) + " bytes")
+    filename = os.path.basename(filepath)
     r = requests.Session()
 
     payload = {'email': login, 'password': password}
@@ -51,10 +52,10 @@ def send_file_to_overcast(filename, login, password, clean=False):
 
     r.post('https://overcast.fm/podcasts/upload_succeeded', data={"key": data_key_prefix})
 
-    print(filename + " has been sent")
+    print(filepath + " has been sent")
 
-    if clean and os.path.exists(filename):
-        os.remove(filename)
+    if clean and os.path.exists(filepath):
+        os.remove(filepath)
 
 
 def send_directory_to_overcast(dirpath, login, password, clean=False):
