@@ -7,8 +7,8 @@ import threading
 import datetime
 
 def send_file_to_overcast(filepath, login, password, clean=False):
-    if not filepath.endswith("mp3"):
-        raise Exception("Only mp3 files can be uploaded.")
+    if not (filepath.upper().endswith(".MP3") or filepath.upper().endswith(".M4A")):
+        raise Exception("Only mp3/m4a files can be uploaded.")
 
     with open(filepath, 'rb') as f:
         file_body = f.read()
@@ -63,7 +63,7 @@ def send_directory_to_overcast(dirpath, login, password, clean=False):
     os.chdir(dirpath)
     threads = []
     for filename in glob.glob("*"):
-        if not filename.endswith("mp3"):
+        if not (filename.upper().endswith(".MP3") or filename.upper().endswith(".M4A")):
             continue
 
         t = threading.Thread(target=send_file_to_overcast, args=(filename, login, password, clean))
